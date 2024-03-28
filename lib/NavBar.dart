@@ -23,6 +23,10 @@ class NavBar extends StatelessWidget {
           title: const Text('Converter'),
           onTap: () => {Navigator.of(context).pushNamed('/converter')},
         ),
+        ListTile(
+          title: const Text('History'),
+          onTap: () => {Navigator.of(context).pushNamed('/history')},
+        ),
       ]),
     );
   }

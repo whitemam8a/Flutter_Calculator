@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hello_flutter/NavBar.dart';
 import 'package:math_expressions/math_expressions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -12,6 +14,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String display = "0"; //Уравнение
   String expression = ""; //Выражение
+
+  void saveExpression(String expression, String result) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm')
+        .format(now); // Форматируем текущую дату и время
+    List<String> expressions = prefs.getStringList('expressions') ?? [];
+    String data = '$expression | $result | $formattedDate';
+    expressions.add(data);
+    await prefs.setStringList('expressions', expressions);
+  }
 
   buttonPressed(btnText) {
     setState(() {
@@ -27,6 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Expression exp = p.parse(expression);
           ContextModel cm = ContextModel();
           display = '${exp.evaluate(EvaluationType.REAL, cm)}';
+          saveExpression(expression, display.toString());
         } catch (e) {
           'Error';
         }
