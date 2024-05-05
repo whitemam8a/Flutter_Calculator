@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/screens/Calculator_Page.dart';
+import 'package:hello_flutter/screens/сalculator_Page.dart';
 import 'package:hello_flutter/screens/Converter_Page.dart';
 import 'package:hello_flutter/screens/History_Page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(My_Calculator());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const My_Calculator());
 }
 
 class My_Calculator extends StatelessWidget {
@@ -16,9 +23,9 @@ class My_Calculator extends StatelessWidget {
       title: 'Flutter Calculator',
       initialRoute: '/',
       routes: {
-        '/': (context) => MyHomePage(),
-        '/converter': (context) => ConverterPage(),
-        '/history': (context) => HistoryPage(),
+        '/': (context) => const MyHomePage(),
+        '/converter': (context) => const ConverterPage(),
+        '/history': (context) => const HistoryPage(),
       },
       // home: MyHomePage(),
       debugShowCheckedModeBanner: false,

@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/NavBar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hello_flutter/Controllers/CalculatorController.dart';
+import 'package:hello_flutter/widgets/NavBar.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -10,31 +12,8 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  CalculatorController controller = CalculatorController();
   List<String> expressions = [];
-
-  Future<List<String>> loadExpressions() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> expressions = prefs.getStringList('expressions') ?? [];
-    return expressions;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadExpressions().then((loadedExpressions) {
-      setState(() {
-        expressions = loadedExpressions;
-      });
-    });
-  }
-
-  void clearSharedPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    setState(() {
-      expressions.clear();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,27 +27,38 @@ class _HistoryPageState extends State<HistoryPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: clearSharedPreferences,
+            icon: const Icon(Icons.delete),
+            onPressed: controller.history,
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: expressions.length,
-        itemBuilder: (context, index) {
-          final reversedIndex = expressions.length - index - 1;
-          List<String> parts = expressions[reversedIndex].split(' | ');
-          String expression = parts[0];
-          String result = parts[1];
-          String date = parts[2];
-          return Container(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(10)),
-            child: ListTile(
-              title: Text('$expression = $result.'),
-              subtitle: Text(date),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('History').snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+            // Отображаем индикатор загрузки пока данные загружаются
+          }
+          if (snapshot.hasError) {
+            return Text(
+                'Error: ${snapshot.error}'); // В случае ошибки отображаем сообщение об ошибке
+          }
+
+          List<Widget> resultsWidgets = [];
+          if (snapshot.hasData) {
+            final results = snapshot.data?.docs.reversed.toList();
+            for (var result in results!) {
+              final resultWidget = ListTile(
+                title: Text('${result["expression"]} = ${result["result"]}.'),
+                subtitle: Text(result["date"]),
+              );
+              resultsWidgets.add(resultWidget);
+            }
+          }
+
+          return Expanded(
+            child: ListView(
+              children: resultsWidgets.reversed.toList(),
             ),
           );
         },

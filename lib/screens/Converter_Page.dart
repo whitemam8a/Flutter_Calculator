@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/NavBar.dart';
+
+import 'package:hello_flutter/Controllers/ConverterController.dart';
+import 'package:hello_flutter/widgets/NavBar.dart';
 
 class ConverterPage extends StatefulWidget {
   const ConverterPage({super.key});
@@ -13,20 +15,15 @@ class _ConverterPageState extends State<ConverterPage> {
   double _resultValue = 0;
 
   final _inputController = TextEditingController();
-
-  void _convert() {
-    setState(() {
-      _resultValue = _inputValue * 0.621371;
-    });
-  }
+  final ConverterController _controller = ConverterController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: NavBar(),
+        drawer: const NavBar(),
         appBar: AppBar(
           centerTitle: true,
-          title: Text(
+          title: const Text(
             'Flutter Converter',
             style: TextStyle(fontSize: 24),
           ),
@@ -35,10 +32,10 @@ class _ConverterPageState extends State<ConverterPage> {
           child: Center(
               child: Column(
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 16,
               ),
-              Text(
+              const Text(
                 'Kilometers',
                 style: TextStyle(fontSize: 20),
               ),
@@ -50,14 +47,9 @@ class _ConverterPageState extends State<ConverterPage> {
                   onChanged: (value) {
                     setState(() {
                       _inputValue = double.tryParse(value) ?? 0;
-                      // if (double.tryParse(value) != null) {
-                      //   _inputValue = double.tryParse(value);
-                      // } else {
-                      //   _inputValue = 0;
-                      // }
                     });
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter kilometers',
                     border: OutlineInputBorder(),
                   ),
@@ -65,7 +57,13 @@ class _ConverterPageState extends State<ConverterPage> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _convert,
+                onPressed: () {
+                  setState(() {
+                    _resultValue =
+                        double.parse(_controller.convert(_inputValue));
+                    // вызываем метод контроллера для конвертации
+                  });
+                },
                 child: const Text('Convert'),
               ),
               const SizedBox(height: 32),
@@ -75,7 +73,7 @@ class _ConverterPageState extends State<ConverterPage> {
               ),
               const SizedBox(height: 16),
               Text(
-                '$_resultValue',
+                _resultValue.toString(),
                 style: const TextStyle(fontSize: 24),
               ),
             ],
